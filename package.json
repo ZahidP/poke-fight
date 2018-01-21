@@ -1,0 +1,26 @@
+{
+  "name": "koa-api",
+  "version": "1.0.0",
+  "description": "Koa Sample App",
+  "main": "index.js",
+  "scripts": {
+    "watch-server": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/server.ts"
+  },
+  "author": "Zahid P",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "nodemon": "^1.14.11",
+    "ts-node": "^4.1.0",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "@types/es6-promise": "^3.3.0",
+    "@types/koa": "^2.0.43",
+    "@types/koa-router": "^7.0.27",
+    "@types/node-fetch": "^1.6.7",
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0",
+    "node-fetch": "^1.7.3",
+    "typings": "^2.1.1"
+  }
+}
