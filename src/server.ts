@@ -24,9 +24,9 @@ console.log('Server running on port 3000');
 
 router
 	.get('/pokemon/:id', getPokemon)
-  .all('/users/:id', (ctx, next) => {
-    // ...
-  });
+  // .all('/users/:id', (ctx, next) => {
+  //   // ...
+  // });
 
 router
 	.get('/attack/:id', getAttack);
@@ -35,7 +35,7 @@ router
   // });
 
 router
-	.get('/battle/p1/:id_1/p2/:id_2', getBattle);
+	.get('/battle/p1/:id_1', getBattle);
   // .all('/battle/:id', (ctx, next) => {
   //   // ...
   // });

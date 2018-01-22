@@ -1,15 +1,16 @@
 import fetch, { Response } from 'node-fetch';
 import * as Koa from 'koa';
+import { CurrentFight, battle } from './battleUtils';
 
 
 
 export interface PokemonWithAddedData {
 	id: string;
 	name: string;
-	weight: 69;
+	weight: number;
 	abilities: any[];
-	moves?: MoveInfo[];
-	stats?: StatsInfo[];
+	moves?: Move[];
+	stats: StatsInfo[];
 }
 
 export interface MoveInfo {
@@ -21,17 +22,26 @@ export interface StatsInfo {
 		url: string;
 		name: string;
 	};
-	effort: Number;
-	base_stat: Number;
+	effort: number;
+	base_stat: number;
 }
 
 
 export interface Stats {
 	id: string;
 	name: string;
-	affecting_moves: any;
-	affecting_natures: any;
+	affecting_moves?: any;
+	affecting_natures?: any;
 }
+
+// {
+// 	"stat": {
+// 		"url": "https://pokeapi.co/api/v2/stat/1/",
+// 		"name": "hp"
+// 	},
+// 	"effort": 0,
+// 	"base_stat": 44
+// }
 
 export interface BasePokemon {
 	id: string;
@@ -43,53 +53,81 @@ export interface BasePokemon {
 }
 
 export interface Move {
-	id: Number;
+	id: number;
 	name: string;
-	accuracy: Number;
-	effect_chance: Number;
-	pp: Number;
-	priority: Number;
-	power: Number;
+	accuracy: number;
+	effect_chance: number;
+	pp: number;
+	priority: number;
+	power: number;
 	contest_combos: any;
+}
+
+
+const fetchAbility = async(attackId: string, baseUrl = 'https://pokeapi.co/api/v2/ability/'): Promise<Response> => {
+	const passThroughUrl: string = `${baseUrl}${attackId}`;
+	return fetch(passThroughUrl);
+}
+
+const fetchPokemon = async(pokemonId: string): Promise<Response> => {
+	const passThroughUrl: string = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+	return fetch(passThroughUrl);
 }
 
 export const getPokemon = async (ctx: Koa.Context): Promise<any> => {
 	const pokemonId: string = ctx.params.id;
 	const response: Response = await fetchPokemon(pokemonId);
-	ctx.body = response.json();
+	ctx.body = await response.json();
 };
 
 export const getAttack = async (ctx: Koa.Context): Promise<any> => {
 	const attackId: string = ctx.params.id;
 	const response: Response = await fetchAbility(attackId);
-	ctx.body = response.json();
+	ctx.body = await response.json();
 };
 
-/**
- *
- */
 export const getBattle = async (ctx: Koa.Context): Promise<any> => {
 	console.log('BATTLE!');
-	const pokemon: BasePokemon[] = await Promise.all([
-		fetchPokemon(ctx.params.id_1).then(pk => pk.json()),
-		fetchPokemon(ctx.params.id_2).then(pk => pk.json())
-	])
+	const [pk1, pk2]: PokemonWithAddedData[] = await Promise.all([
+		fetchPokemon('1')
+			.then(pk => pk.json())
+			.then(async (data: BasePokemon) => {
+				console.log('fetching moves');
+				const moves = await fetchMoves(data);
+				console.log('done fetching moves');
+				return Object.assign({}, data, {moves})
+			}),
+		fetchPokemon('2')
+		.then(pk => pk.json())
+		.then(async (data: BasePokemon) => {
+			console.log('fetching moves');
+			const moves = await fetchMoves(data);
+			console.log('done fetching moves');
+			return Object.assign({}, data, {moves})
+		})
+	]);
 
-	const battleReadyPokemon: PokemonWithAddedData[] = pokemon.map((data) => {
-		const stats = fetchStats(data);
-		const moves = fetchAbilities(data);
-		return Object.assign({}, data, {stats, moves})
-	});
+	const findHp = (stat: StatsInfo) => {
+		return stat.stat.name === 'hp';
+	};
 
+	const currentFight: CurrentFight  = {
+		p1Hp: pk1.stats.find(findHp).base_stat,
+		p2Hp: pk2.stats.find(findHp).base_stat,
+		moveHistory: [],
+		turn: 0
+	};
 
+	console.log('And our taaaale of the tape');
+	console.log(currentFight);
 
+	const { winner, finalHistory } = battle([pk1, pk2], currentFight, []);
 
-}
-
-
-const attack = (currentFight: any, battleReadyPokemon: PokemonWithAddedData): any => {
-
+	ctx.body = {
+		winner, finalHistory
+	};
 };
+
 
 /**
 	*
@@ -99,8 +137,6 @@ const fetchStats = async (pokemon: BasePokemon): Promise<Stats[]> => {
 	console.log(pokemon.name);
 	const responsePromises: Promise<Stats>[] = pokemon.stats
 		.map((stat: StatsInfo) => {
-			console.log('stat');
-			console.log(stat.stat.url);
 			return fetch(stat.stat.url).then(res => res.json());
 		});
 	return Promise.all(responsePromises)
@@ -109,24 +145,14 @@ const fetchStats = async (pokemon: BasePokemon): Promise<Stats[]> => {
 /**
 	*
 	*/
-const fetchAbilities = async (pokemon: BasePokemon): Promise<Move[]> => {
+const fetchMoves = async (pokemon: BasePokemon): Promise<Move[]> => {
 	console.log('pokemon');
 	console.log(pokemon.name);
 	const responsePromises: Promise<Move>[] = pokemon.moves
 		.map((move: MoveInfo) => {
-			console.log('move');
 			console.log(move.move.url);
-			return fetchAbility('', move.move.url).then(res => res.json());
+			return fetch(move.move.url).then(res => res.json());
 		});
+	console.log('returning promises');
 	return Promise.all(responsePromises)
-}
-
-const fetchAbility = async(attackId: string, baseUrl = 'http://pokeapi.co/api/v2/ability/'): Promise<Response> => {
-	const passThroughUrl: string = `${baseUrl}${attackId}`;
-	return fetch(passThroughUrl);
-}
-
-const fetchPokemon = async(pokemonId: string): Promise<Response> => {
-	const passThroughUrl: string = `http://pokeapi.co/api/v2/pokemon/${pokemonId}`;
-	return fetch(passThroughUrl);
-}
+};
