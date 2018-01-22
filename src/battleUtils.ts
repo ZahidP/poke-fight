@@ -5,7 +5,7 @@ import {
 
 
 export interface CurrentFight {
-	moveHistory: any;
+	lastMove: any;
 	p1Hp: number;
 	p2Hp: number;
 	turn: number;
@@ -55,7 +55,7 @@ const attackGen = (pkm: PokemonWithAddedData[]) => {
 		const fight: CurrentFight = {
 			p1Hp: (cfs.p1Hp - damageToP1),
 			p2Hp: (cfs.p2Hp - damageToP2),
-			moveHistory: lastMove,
+			lastMove: lastMove,
 			turn: nextTurn
 		};
 
@@ -96,7 +96,7 @@ export const battle = (
 		{},
 		currentState,
 		{ p2Hp: updatedP2Hp,
-			moveHistory: updatedHistory,
+			lastMove: updatedHistory,
 			turn: 1
 		}
 	);

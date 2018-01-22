@@ -119,7 +119,7 @@ export const getBattle = async (ctx: Koa.Context): Promise<any> => {
 	const currentFight: CurrentFight  = {
 		p1Hp: pk1.stats.find(findHp).base_stat,
 		p2Hp: pk2.stats.find(findHp).base_stat,
-		moveHistory: [],
+		lastMove: [],
 		turn: 0
 	};
 
