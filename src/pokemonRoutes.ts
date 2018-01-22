@@ -89,7 +89,7 @@ export const getAttack = async (ctx: Koa.Context): Promise<any> => {
 export const getBattle = async (ctx: Koa.Context): Promise<any> => {
 	console.log('BATTLE!');
 	const [pk1, pk2]: PokemonWithAddedData[] = await Promise.all([
-		fetchPokemon('1')
+		fetchPokemon(ctx.params.id_1)
 			.then(pk => pk.json())
 			.then(async (data: BasePokemon) => {
 				try {
@@ -100,7 +100,7 @@ export const getBattle = async (ctx: Koa.Context): Promise<any> => {
 				}
 
 			}),
-		fetchPokemon('2')
+		fetchPokemon(ctx.params.id_2)
 		.then(pk => pk.json())
 		.then(async (data: BasePokemon) => {
 			try {
