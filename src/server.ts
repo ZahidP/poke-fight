@@ -1,6 +1,7 @@
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import {getPokemon, getAttack, getBattle} from './pokemonRoutes'
+import * as json from 'koa-json';
 
 const app = new Koa();
 
@@ -17,6 +18,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
 const router = new Router();
 
 app.use(router.routes());
+app.use(json());
 
 app.listen(3000);
 
