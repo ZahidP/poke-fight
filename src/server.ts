@@ -37,7 +37,7 @@ router
   // });
 
 router
-	.get('/battle/p1/:id_1', getBattle);
+	.get('/battle/p1/:id_1/p2/:id_2', getBattle);
   // .all('/battle/:id', (ctx, next) => {
   //   // ...
   // });
