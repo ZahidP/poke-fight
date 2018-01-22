@@ -15,8 +15,6 @@ const getAttackResults = (pkm: PokemonWithAddedData, initial = false) => {
 	const ml = pkm.moves.length;
 	const selection = Math.floor(Math.random() * ml)
 	const move = pkm.moves[selection];
-	console.log('move');
-	console.log(move);
 	const damage = initial ? move.power * 0.1 : move.power;
 
 	if (Math.random() > move.accuracy && !initial) {
@@ -42,6 +40,7 @@ const attackGen = (pkm: PokemonWithAddedData[]) => {
 		console.log('Current Fight');
 		console.log(cfs);
 
+		console.log(pkm[cfs.turn].name);
 		const attackResult = getAttackResults(pkm[cfs.turn]);
 		const lastMove = attackResult;
 
@@ -54,23 +53,26 @@ const attackGen = (pkm: PokemonWithAddedData[]) => {
 
 		// update current fight
 		const fight: CurrentFight = {
-			p1Hp: cfs.p1Hp - damageToP1,
-			p2Hp: cfs.p1Hp - damageToP2,
+			p1Hp: (cfs.p1Hp - damageToP1),
+			p2Hp: (cfs.p2Hp - damageToP2),
 			moveHistory: lastMove,
 			turn: nextTurn
 		};
 
-		console.log('history updated');
+		console.log('fight status');
+		console.log(fight);
 		const updatedHistory = history.concat([fight]);
+		console.log(updatedHistory);
 
 		if (fight.p1Hp > 0 && fight.p2Hp > 0) {
 			console.log('fight again!');
-			return inner(fight, history);
+			return inner(fight, updatedHistory);
 		} else {
+			console.log('fight over');
 			const winner = fight.p1Hp > 0 ? pkm[0].name : pkm[1].name;
 			return {
 				winner,
-				history: updatedHistory
+				finalHistory: updatedHistory
 			};
 		}
 	}
@@ -82,24 +84,24 @@ export const battle = (
 	currentState: CurrentFight,
 	history: any
 ) => {
-
 	const nextState: CurrentFight = currentState;
 	const beginFight: Function = attackGen(pkm);
 	// guaranteed initial attack
-	const attackResult = getAttackResults(pkm[0]);
+	const attackResult = getAttackResults(pkm[0], true);
 
-	const updatedP2Hp = currentState.p2Hp - attackResult.damage;
+	const updatedP2Hp = (currentState.p2Hp - attackResult.damage);
 	const updatedHistory = history.concat([attackResult]);
 
 	const updatedFight: CurrentFight  = Object.assign(
 		{},
 		currentState,
 		{ p2Hp: updatedP2Hp,
-			moveHistory: updatedHistory
+			moveHistory: updatedHistory,
+			turn: 1
 		}
 	);
 	console.log('Begin epic battle');
-	return beginFight(updatedFight, history);
+	return beginFight(updatedFight, updatedHistory);
 };
 /**
  *

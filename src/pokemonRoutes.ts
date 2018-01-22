@@ -46,7 +46,7 @@ export interface Stats {
 export interface BasePokemon {
 	id: string;
 	name: string;
-	weight: 69;
+	weight: number;
 	abilities: any[];
 	moves: MoveInfo[];
 	stats: StatsInfo[];
@@ -64,13 +64,13 @@ export interface Move {
 }
 
 
-const fetchAbility = async(attackId: string, baseUrl = 'https://pokeapi.co/api/v2/ability/'): Promise<Response> => {
+const fetchAbility = async(attackId: string, baseUrl = 'http://pokeapi.co/api/v2/ability/'): Promise<Response> => {
 	const passThroughUrl: string = `${baseUrl}${attackId}`;
 	return fetch(passThroughUrl);
 }
 
 const fetchPokemon = async(pokemonId: string): Promise<Response> => {
-	const passThroughUrl: string = `https://pokeapi.co/api/v2/pokemon/${pokemonId}`;
+	const passThroughUrl: string = `http://pokeapi.co/api/v2/pokemon/${pokemonId}`;
 	return fetch(passThroughUrl);
 }
 
@@ -92,18 +92,23 @@ export const getBattle = async (ctx: Koa.Context): Promise<any> => {
 		fetchPokemon('1')
 			.then(pk => pk.json())
 			.then(async (data: BasePokemon) => {
-				console.log('fetching moves');
-				const moves = await fetchMoves(data);
-				console.log('done fetching moves');
-				return Object.assign({}, data, {moves})
+				try {
+					const moves = await fetchMoves(data);
+					return Object.assign({}, data, {moves})
+				} catch(err) {
+					throw(err);
+				}
+
 			}),
 		fetchPokemon('2')
 		.then(pk => pk.json())
 		.then(async (data: BasePokemon) => {
-			console.log('fetching moves');
-			const moves = await fetchMoves(data);
-			console.log('done fetching moves');
-			return Object.assign({}, data, {moves})
+			try {
+				const moves = await fetchMoves(data);
+				return Object.assign({}, data, {moves})
+			} catch(err) {
+				throw(err);
+			}
 		})
 	]);
 
@@ -121,7 +126,11 @@ export const getBattle = async (ctx: Koa.Context): Promise<any> => {
 	console.log('And our taaaale of the tape');
 	console.log(currentFight);
 
-	const { winner, finalHistory } = battle([pk1, pk2], currentFight, []);
+	const { winner, finalHistory } = battle([pk1, pk2], currentFight, [currentFight]);
+
+
+	console.log('final history');
+	console.log(finalHistory);
 
 	ctx.body = {
 		winner, finalHistory
@@ -148,9 +157,16 @@ const fetchStats = async (pokemon: BasePokemon): Promise<Stats[]> => {
 const fetchMoves = async (pokemon: BasePokemon): Promise<Move[]> => {
 	console.log('pokemon');
 	console.log(pokemon.name);
-	const responsePromises: Promise<Move>[] = pokemon.moves
-		.map((move: MoveInfo) => {
-			console.log(move.move.url);
+
+	// going to do this to not get throttled
+	const maxFive = pokemon.moves.length > 5 ? pokemon.moves.slice(0,10) : pokemon.moves;
+	console.log(maxFive.length);
+	let i = 0;
+	const responsePromises: Promise<Move>[] = maxFive
+		.map((move: MoveInfo, index: number) => {
+			console.log(i);
+			i++;
+			// return Promise.resolve(null);
 			return fetch(move.move.url).then(res => res.json());
 		});
 	console.log('returning promises');
