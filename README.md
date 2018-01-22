@@ -14,6 +14,7 @@ This API exposes 3 endpoints:
    - Returns a straight passthrough to `pokeapi.com/api/v2/moves/:id`
 
 3. GET `/battle/p1/:id_1/p2/:id_2`
+   - Note: Currently cannot search by Pokemon name as that might require many requests to pokeapi and can result in those requests being throttled
    - Executes a battle between 2 Pokemon and returns results in the format
 	  ```
 	   {"winner":"wartortle",
@@ -23,9 +24,9 @@ This API exposes 3 endpoints:
 		 	{"p1Hp":-5,"p2Hp":50.5,"lastMove":{"pokemon":"wartortle","moveName":"body-slam","damage":85,"note":"SUCCESS"},"turn":0}
 		 ]
 	 }
-		 
+
 	```
-	
+
 Battle Mechanics and Limitations
 
 - We only use basic stats of HP, Power, and Accuracy

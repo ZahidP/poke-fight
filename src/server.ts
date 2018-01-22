@@ -1,6 +1,6 @@
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
-import {getPokemon, getAttack, getBattle} from './pokemonRoutes'
+import {getPokemonRoute, getAttackRoute, getBattleRoute} from './pokemonRoutes'
 import * as json from 'koa-json';
 
 const app = new Koa();
@@ -25,19 +25,19 @@ app.listen(3000);
 console.log('Server running on port 3000');
 
 router
-	.get('/pokemon/:id', getPokemon)
+	.get('/pokemon/:id', getPokemonRoute)
   // .all('/users/:id', (ctx, next) => {
   //   // ...
   // });
 
 router
-	.get('/attack/:id', getAttack);
+	.get('/attack/:id', getAttackRoute);
   // .all('/users/:id', (ctx, next) => {
   //   // ...
   // });
 
 router
-	.get('/battle/p1/:id_1/p2/:id_2', getBattle);
+	.get('/battle/p1/:id_1/p2/:id_2', getBattleRoute);
   // .all('/battle/:id', (ctx, next) => {
   //   // ...
   // });

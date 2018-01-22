@@ -5,13 +5,20 @@ import {
 
 
 export interface CurrentFight {
-	lastMove: any;
+	lastMove: MoveResult;
 	p1Hp: number;
 	p2Hp: number;
 	turn: number;
 }
 
-const getAttackResults = (pkm: PokemonWithAddedData, initial = false) => {
+export interface MoveResult {
+	pokemon: string;
+	moveName: string;
+	damage: number;
+	note: string;
+}
+
+const getAttackResults = (pkm: PokemonWithAddedData, initial = false): MoveResult => {
 	const ml = pkm.moves.length;
 	const selection = Math.floor(Math.random() * ml)
 	const move = pkm.moves[selection];
@@ -34,15 +41,11 @@ const getAttackResults = (pkm: PokemonWithAddedData, initial = false) => {
 	}
 };
 
-const attackGen = (pkm: PokemonWithAddedData[]) => {
-	const inner = (cfs: CurrentFight, history: CurrentFight[]): any => {
+const attackGen = (pkm: PokemonWithAddedData[]): Function => {
+	const inner = (cfs: CurrentFight, history: CurrentFight[]): Function | Object => {
 
-		console.log('Current Fight');
-		console.log(cfs);
 
-		console.log(pkm[cfs.turn].name);
 		const attackResult = getAttackResults(pkm[cfs.turn]);
-		const lastMove = attackResult;
 
 		// get damage
 		const damageToP1: number = cfs.turn ? attackResult.damage : 0;
@@ -55,20 +58,15 @@ const attackGen = (pkm: PokemonWithAddedData[]) => {
 		const fight: CurrentFight = {
 			p1Hp: (cfs.p1Hp - damageToP1),
 			p2Hp: (cfs.p2Hp - damageToP2),
-			lastMove: lastMove,
+			lastMove: attackResult,
 			turn: nextTurn
 		};
 
-		console.log('fight status');
-		console.log(fight);
 		const updatedHistory = history.concat([fight]);
-		console.log(updatedHistory);
 
 		if (fight.p1Hp > 0 && fight.p2Hp > 0) {
-			console.log('fight again!');
 			return inner(fight, updatedHistory);
 		} else {
-			console.log('fight over');
 			const winner = fight.p1Hp > 0 ? pkm[0].name : pkm[1].name;
 			return {
 				winner,
@@ -96,11 +94,10 @@ export const battle = (
 		{},
 		currentState,
 		{ p2Hp: updatedP2Hp,
-			lastMove: updatedHistory,
+			lastMove: attackResult,
 			turn: 1
 		}
 	);
-	console.log('Begin epic battle');
 	return beginFight(updatedFight, updatedHistory);
 };
 /**
