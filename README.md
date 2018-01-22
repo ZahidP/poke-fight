@@ -13,7 +13,7 @@ This API exposes 3 endpoints:
 2. GET `/attack/:id`
    - Returns a straight passthrough to `pokeapi.com/api/v2/moves/:id`
 
-3. GET `battle/p1/:id_1/p2/:id_2`
+3. GET `/battle/p1/:id_1/p2/:id_2`
    - Executes a battle between 2 Pokemon and returns results in the format
 	  ```
 	   {"winner":"wartortle",
@@ -25,3 +25,14 @@ This API exposes 3 endpoints:
 	 }
 		 
 	```
+	
+Battle Mechanics and Limitations
+
+- We only use basic stats of HP, Power, and Accuracy
+- We fetch a limited number of moves to avoid throttling by the API
+   - In order to get these moves we just run through all moves listed on the `/pokemon/id` json response
+- The battle mechanics are simple:
+   - Player One begins with a limited strength attack, guaranteed to land
+   - After this each player takes turns. A move is selected at random from each Pokemon's arsenal of moves.
+   - That move is executed against the opponent, taking into account its accuracy and power.
+   - If the recently attacked player still has HP above 0, it is then their turn to attack.
