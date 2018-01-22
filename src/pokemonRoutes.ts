@@ -1,7 +1,8 @@
 import fetch, { Response } from 'node-fetch';
 import * as Koa from 'koa';
 import { CurrentFight, battle } from './battleUtils';
-
+import getNames from './pokemonNamesToId';
+import cache from './pokemonCache';
 
 
 export interface PokemonWithAddedData {
@@ -60,7 +61,7 @@ const fetchAbility = async (attackId: string, baseUrl = 'http://pokeapi.co/api/v
 	return fetch(passThroughUrl);
 }
 
-const fetchPokemon = async (pokemonId: string): Promise<Response> => {
+export const fetchPokemon = async (pokemonId: string): Promise<Response> => {
 	const passThroughUrl: string = `http://pokeapi.co/api/v2/pokemon/${pokemonId}`;
 	return fetch(passThroughUrl);
 }
@@ -78,6 +79,7 @@ export const getAttackRoute = async (ctx: Koa.Context): Promise<any> => {
 };
 
 export const fetchPokemonWithMoves = (id: string): Promise<PokemonWithAddedData> => {
+	console.log('fetching pokemon id: ' + id)
 	return fetchPokemon(id)
 		.then(pk => pk.json())
 		.then(async (data: BasePokemon) => {
@@ -91,14 +93,20 @@ export const fetchPokemonWithMoves = (id: string): Promise<PokemonWithAddedData>
 }
 
 export const getBattleRoute = async (ctx: Koa.Context): Promise<any> => {
+
+	const id1 = ctx.params.id_1.length > 3 ? cache[ctx.params.id_1] : ctx.params.id_1;
+	const id2 = ctx.params.id_2.length > 3 ? cache[ctx.params.id_2] : ctx.params.id_2;
+
 	const [pk1, pk2]: PokemonWithAddedData[] = await Promise.all([
-		fetchPokemonWithMoves(ctx.params.id_1),
-		fetchPokemonWithMoves(ctx.params.id_2)
+		fetchPokemonWithMoves(id1),
+		fetchPokemonWithMoves(id2)
 	]);
 
 	const findHp = (stat: StatsInfo) => {
 		return stat.stat.name === 'hp';
 	};
+
+	console.log('Setting up fight');
 
 	const currentFight: CurrentFight  = {
 		p1Hp: pk1.stats.find(findHp).base_stat,
@@ -139,3 +147,10 @@ const fetchMoves = async (pokemon: BasePokemon): Promise<Move[]> => {
 		});
 	return Promise.all(responsePromises)
 };
+
+
+export const getNamesCache = async (ctx: Koa.Context): Promise<any> => {
+	const {begin, end} = ctx.params;
+	const result = await getNames(begin, end);
+	ctx.body = result;
+}

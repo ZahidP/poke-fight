@@ -1,6 +1,6 @@
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
-import {getPokemonRoute, getAttackRoute, getBattleRoute} from './pokemonRoutes'
+import {getPokemonRoute, getAttackRoute, getBattleRoute, getNamesCache} from './pokemonRoutes'
 import * as json from 'koa-json';
 
 const app = new Koa();
@@ -41,3 +41,5 @@ router
   // .all('/battle/:id', (ctx, next) => {
   //   // ...
   // });
+
+router.get('/pokemonIds/begin/:begin/end/:end', getNamesCache)
